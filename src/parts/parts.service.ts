@@ -1,20 +1,52 @@
-
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
+import {
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, ILike } from 'typeorm';
+import { AutoPartEntity } from './entities/auto-part.entity';
 import { CreatePartDto } from '../dto/create-part.dto';
 import { UpdatePartDto } from '../dto/update-part.dto';
-import { Part } from './part.interface';
 
 @Injectable()
 export class PartsService {
-  private parts: Part[] = [];
+  constructor(
+    @InjectRepository(AutoPartEntity)
+    private readonly partsRepository: Repository<AutoPartEntity>,
+  ) { }
 
-  findAll(): Part[] {
-    return this.parts;
+  async findAll(
+    page = 1,
+    limit = 10,
+    search?: string,
+  ): Promise<{
+    data: AutoPartEntity[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const safePage = Math.max(1, page);
+    const safeLimit = Math.min(100, Math.max(1, limit));
+
+    const [data, total] = await this.partsRepository.findAndCount({
+      where: search ? { title: ILike(`%${search}%`) } : {},
+      order: { createdAt: 'DESC' },
+      skip: (safePage - 1) * safeLimit,
+      take: safeLimit,
+    });
+
+    return {
+      data,
+      total,
+      page: safePage,
+      limit: safeLimit,
+      totalPages: Math.ceil(total / safeLimit),
+    };
   }
 
-  findOne(id: string): Part {
-    const part = this.parts.find((item) => item.id === id);
+  async findOne(id: string): Promise<AutoPartEntity> {
+    const part = await this.partsRepository.findOneBy({ id });
 
     if (!part) {
       throw new NotFoundException(`Part with ID ${id} not found`);
@@ -23,34 +55,38 @@ export class PartsService {
     return part;
   }
 
-  create(dto: CreatePartDto): Part {
-    const newPart: Part = {
-      id: randomUUID(),
-      title: dto.title,
-      price: dto.price,
-      oemCode: dto.oemCode,
-      condition: dto.condition,
-      carBrand: dto.carBrand,
-    };
-
-    this.parts.push(newPart);
-
-    return newPart;
+  async create(dto: CreatePartDto): Promise<AutoPartEntity> {
+    const part = this.partsRepository.create(dto);
+    return this.partsRepository.save(part);
   }
 
-  update(id: string, dto: UpdatePartDto): Part {
-    const part = this.findOne(id);
+  async update(
+    id: string,
+    dto: UpdatePartDto,
+  ): Promise<AutoPartEntity> {
+    const part = await this.findOne(id);
 
     Object.assign(part, dto);
 
-    return part;
+    return this.partsRepository.save(part);
   }
 
-  remove(id: string): { message: string } {
-    const part = this.findOne(id);
-
-    this.parts = this.parts.filter((item) => item.id !== part.id);
+  async remove(id: string): Promise<{ message: string }> {
+    await this.findOne(id);
+    await this.partsRepository.softDelete(id);
 
     return { message: 'Part deleted successfully' };
+  }
+
+  async restore(id: string): Promise<{ message: string }> {
+    const result = await this.partsRepository.restore(id);
+
+    if (!result.affected) {
+      throw new NotFoundException(
+        `Deleted part with ID ${id} not found`,
+      );
+    }
+
+    return { message: 'Part restored successfully' };
   }
 }

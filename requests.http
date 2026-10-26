@@ -1,48 +1,47 @@
-###
-GET http://localhost:3000/parts/nonexistent-id
-### 1. Створити запчастину
-POST http://localhost:3000/parts
+@baseUrl = http://localhost:3000
+
+### 1. Створити автозапчастину
+# @name createPart
+POST {{baseUrl}}/parts
 Content-Type: application/json
 
 {
-  "title": "  Brake pads  ",
-  "price": 500,
-  "oemCode": "  ABC123  ",
+  "title": "Гальмівні колодки BMW",
+  "price": 1250.50,
+  "oemCode": "BMW123",
   "condition": "NEW",
-  "carBrand": "  Toyota  "
+  "carBrand": "BMW"
 }
 
-###
-POST http://localhost:3000/parts
+### 2. Отримати всі автозапчастини
+GET {{baseUrl}}/parts
+
+### 3. Пагінація: перша сторінка, 5 записів
+GET {{baseUrl}}/parts?page=1&limit=5
+
+### 4. Пошук за назвою
+GET {{baseUrl}}/parts?search=BMW
+
+### 5. Отримати одну автозапчастину
+GET {{baseUrl}}/parts/20dad7af-9db6-4a0e-a99f-30661c80a661
+
+### 6. Оновити автозапчастину
+PATCH {{baseUrl}}/parts/20dad7af-9db6-4a0e-a99f-30661c80a661
 Content-Type: application/json
 
 {
-  "title": "  Brake pads  ",
-  "price": 500,
-  "oemCode": "  ABC123  ",
-  "condition": "NEW",
-  "carBrand": "  Toyota  "
+  "price": 1499.99,
+  "title": "Гальмівні колодки BMW Premium"
 }
 
-### 2. Отримати всі запчастини
-GET http://localhost:3000/parts
+### 7. М'яко видалити автозапчастину
+DELETE {{baseUrl}}/parts/20dad7af-9db6-4a0e-a99f-30661c80a661
 
-### 3. Отримати одну запчастину
-# Заміни ID на справжній id із відповіді POST
-GET http://localhost:3000/parts/ae30dc8c-fda0-4457-84d2-b84d979cf359
+### 8. Перевірити, що видалений запис не повертається
+GET {{baseUrl}}/parts/20dad7af-9db6-4a0e-a99f-30661c80a661
 
-### 4. Оновити тільки ціну
-# Заміни ID на справжній id
-PATCH http://localhost:3000/parts/ae30dc8c-fda0-4457-84d2-b84d979cf359
-Content-Type: application/json
+### 9. Відновити видалену автозапчастину
+PATCH {{baseUrl}}/parts/20dad7af-9db6-4a0e-a99f-30661c80a661/restore
 
-{
-  "price": 1500
-}
-
-### 5. Видалити запчастину
-# Заміни ID на справжній id
-DELETE http://localhost:3000/parts/ae30dc8c-fda0-4457-84d2-b84d979cf359
-
-### 6. Перевірити, що запчастини більше немає
-GET http://localhost:3000/parts/ae30dc8c-fda0-4457-84d2-b84d979cf359
+### 10. Перевірити відновлений запис
+GET {{baseUrl}}/parts/20dad7af-9db6-4a0e-a99f-30661c80a661

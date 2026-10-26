@@ -1,19 +1,31 @@
-import { IsString, IsNotEmpty, IsNumber, IsPositive, Length, IsEnum } from "class-validator"
-import { Condition } from "./condition"
+import {
+    IsString,
+    IsNotEmpty,
+    IsNumber,
+    IsPositive,
+    Length,
+    IsEnum,
+} from 'class-validator';
+import { Condition } from './condition';
+
 export class CreatePartDto {
     @IsString()
     @IsNotEmpty()
-    title: string
+    title: string;
+
     @IsNumber()
     @IsPositive()
-    price: number
+    price: number;
+
     @IsString()
     @IsNotEmpty()
     @Length(6, 20)
-    oemCode: string
+    oemCode: string;
+
     @IsEnum(Condition)
-    condition: Condition
+    condition: Condition;
+
     @IsString()
     @IsNotEmpty()
-    carBrand: string
+    carBrand: string;
 }
