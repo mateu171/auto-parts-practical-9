@@ -6,6 +6,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ManyToOne, ManyToMany, OneToOne, JoinTable, JoinColumn } from 'typeorm';
+import { CarModelEntity } from './car-model.entity';
+import { SpecificationEntity } from './specification.entity';
+import { CompatibilityCodeEntity } from './compatibility-code.entity';
 
 @Entity('parts')
 export class AutoPartEntity {
@@ -46,4 +50,23 @@ export class AutoPartEntity {
 
   @DeleteDateColumn({ type: 'timestamptz', nullable: true })
   deletedAt: Date | null;
+
+  @ManyToOne(() => CarModelEntity, (carModel) => carModel.parts, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
+  carModel: CarModelEntity;
+
+  @ManyToMany(() => SpecificationEntity, (specification) => specification.parts, {
+    cascade: true,
+  })
+  @JoinTable()
+  specifications: SpecificationEntity[];
+
+  @OneToOne(() => CompatibilityCodeEntity, (code) => code.part, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  compatibilityCode: CompatibilityCodeEntity;
 }
