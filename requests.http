@@ -1,47 +1,89 @@
 @baseUrl = http://localhost:3000
 
-### 1. Створити автозапчастину
-# @name createPart
-POST {{baseUrl}}/parts
+### Реєстрація користувача
+POST http://localhost:3000/auth/register
 Content-Type: application/json
 
 {
-  "title": "Гальмівні колодки BMW",
-  "price": 1250.50,
-  "oemCode": "BMW123",
+  "email": "driver@test.com",
+  "password": "123456"
+}
+
+### Авторизація користувача
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "driver@test.com",
+  "password": "123456"
+}
+
+### Отримання профілю
+GET http://localhost:3000/auth/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjkxZGU1ZC0xYTk1LTQ0YmEtOGNjOS0yZWFlOWFjOTUyNzEiLCJlbWFpbCI6ImRyaXZlckB0ZXN0LmNvbSIsInJvbGUiOiJNRUNIQU5JQyIsImlhdCI6MTc5NDA4MzUwMiwiZXhwIjoxNzk0MDg0NDAyfQ.IvnUTDCu6wzncnjImcRWyQFOUCrK4GhUHamQS5Hd7cM
+
+### Спроба створити запчастину від DRIVER
+POST http://localhost:3000/parts
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjkxZGU1ZC0xYTk1LTQ0YmEtOGNjOS0yZWFlOWFjOTUyNzEiLCJlbWFpbCI6ImRyaXZlckB0ZXN0LmNvbSIsInJvbGUiOiJNRUNIQU5JQyIsImlhdCI6MTc5NDA4MzUwMiwiZXhwIjoxNzk0MDg0NDAyfQ.IvnUTDCu6wzncnjImcRWyQFOUCrK4GhUHamQS5Hd7cM
+Content-Type: application/json
+
+{
+  "title": "Тестова запчастина",
+  "price": 500
+}
+
+### Оновлення токенів
+POST http://localhost:3000/auth/refresh
+
+### Вихід із системи
+POST http://localhost:3000/auth/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjkxZGU1ZC0xYTk1LTQ0YmEtOGNjOS0yZWFlOWFjOTUyNzEiLCJlbWFpbCI6ImRyaXZlckB0ZXN0LmNvbSIsInJvbGUiOiJNRUNIQU5JQyIsImlhdCI6MTc5NDA4MzUzMywiZXhwIjoxNzk0MDg0NDMzfQ.r89oQ7lMrVd_QwA2TOZaB0hQd71ycSk6vFVgkhKUAwc
+
+### Спроба повторного оновлення після Logout
+POST http://localhost:3000/auth/refresh
+
+### Реєстрація з неправильними даними
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "email": "wrong-email",
+  "password": "123"
+}
+
+### Login під роллю MECHANIC
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "driver@test.com",
+  "password": "123456"
+}
+
+### MECHANIC — спроба створити запчастину
+POST http://localhost:3000/parts
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjkxZGU1ZC0xYTk1LTQ0YmEtOGNjOS0yZWFlOWFjOTUyNzEiLCJlbWFpbCI6ImRyaXZlckB0ZXN0LmNvbSIsInJvbGUiOiJNRUNIQU5JQyIsImlhdCI6MTc5NDA4MzYyMCwiZXhwIjoxNzk0MDg0NTIwfQ.MJqddhi_JLx0PY7rNn4VajvNbYAxOOCFdsVaZrKZKcg
+Content-Type: application/json
+
+{
+  "title": "Тестова запчастина",
+  "price": 500
+}
+
+### MECHANIC — створення запчастини зі зв'язками
+POST {{baseUrl}}/parts/with-relations
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjkxZGU1ZC0xYTk1LTQ0YmEtOGNjOS0yZWFlOWFjOTUyNzEiLCJlbWFpbCI6ImRyaXZlckB0ZXN0LmNvbSIsInJvbGUiOiJNRUNIQU5JQyIsImlhdCI6MTc5NDA4MzYyMCwiZXhwIjoxNzk0MDg0NTIwfQ.MJqddhi_JLx0PY7rNn4VajvNbYAxOOCFdsVaZrKZKcg
+Content-Type: application/json
+
+{
+  "title": "Тестова деталь механіка",
+  "price": 500,
+  "oemCode": "MECH-001",
   "condition": "NEW",
-  "carBrand": "BMW"
+  "carBrand": "Volkswagen",
+  "carModelId": "a8ab6f57-7595-4d12-966a-4b240c4b07c7",
+  "specificationIds": [
+    "090bd670-5020-4bd9-8f8c-6ee0a6c71f5a"
+  ],
+  "compatibilityCode": "COMPAT-MECH-001"
 }
-
-### 2. Отримати всі автозапчастини
-GET {{baseUrl}}/parts
-
-### 3. Пагінація: перша сторінка, 5 записів
-GET {{baseUrl}}/parts?page=1&limit=5
-
-### 4. Пошук за назвою
-GET {{baseUrl}}/parts?search=BMW
-
-### 5. Отримати одну автозапчастину
-GET {{baseUrl}}/parts/20dad7af-9db6-4a0e-a99f-30661c80a661
-
-### 6. Оновити автозапчастину
-PATCH {{baseUrl}}/parts/20dad7af-9db6-4a0e-a99f-30661c80a661
-Content-Type: application/json
-
-{
-  "price": 1499.99,
-  "title": "Гальмівні колодки BMW Premium"
-}
-
-### 7. М'яко видалити автозапчастину
-DELETE {{baseUrl}}/parts/20dad7af-9db6-4a0e-a99f-30661c80a661
-
-### 8. Перевірити, що видалений запис не повертається
-GET {{baseUrl}}/parts/20dad7af-9db6-4a0e-a99f-30661c80a661
-
-### 9. Відновити видалену автозапчастину
-PATCH {{baseUrl}}/parts/20dad7af-9db6-4a0e-a99f-30661c80a661/restore
-
-### 10. Перевірити відновлений запис
-GET {{baseUrl}}/parts/20dad7af-9db6-4a0e-a99f-30661c80a661
